@@ -38,4 +38,4 @@ const liveStreamSchema = mongoose.Schema({
 
 const LiveStream = mongoose.model('LiveStream', liveStreamSchema);
 
-module.exports = LiveStream;
+module.exports = { liveStreamSchema, LiveStream };

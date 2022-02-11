@@ -14,4 +14,4 @@ const userSearchResultSchema = mongoose.Schema({
 
 const UserSearchResult = mongoose.model('UserSearchResult', userSearchResultSchema);
 
-module.exports = UserSearchResult;
+module.exports = { userSearchResultSchema, UserSearchResult };

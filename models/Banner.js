@@ -15,11 +15,11 @@ const bannerSchema = mongoose.Schema({
 	},
     isVip: { 
 		type: Boolean,
-		required: true,
+		required: false,
         default: false,
 	}
 });
 
 const Banner = mongoose.model('Banner', bannerSchema);
 
-module.exports = Banner;
+module.exports = { bannerSchema, Banner };

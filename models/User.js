@@ -31,19 +31,23 @@ const userSchema = mongoose.Schema({
 	},
     level: { 
 		type: Number,
-		required: true,
+		required: false,
+        default: 0,
 	},
     followers: { 
 		type: Number,
-		required: true,
+		required: false,
+        default: 0,
 	},
     fans: { 
 		type: Number,
-		required: true,
+		required: false,
+        default: 0,
 	},
     videos: { 
 		type: Number,
-		required: true,
+		required: false,
+        default: 0,
 	},
     age: { 
 		type: Number,
@@ -51,7 +55,8 @@ const userSchema = mongoose.Schema({
 	},
     posts: { 
 		type: Number,
-		required: true,
+		required: false,
+        default: 0,
 	},
     coin: { 
 		type: Number,
@@ -68,11 +73,11 @@ const userSchema = mongoose.Schema({
 	},
     isVip: { 
 		type: Boolean,
-		required: true,
+		required: false,
         default: false,
 	}
 });
 
 const User = mongoose.model('User', userSchema);
 
-module.exports = User;
+module.exports = { userSchema, User };
