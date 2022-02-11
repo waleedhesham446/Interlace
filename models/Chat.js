@@ -3,13 +3,11 @@ const { userSchema } = require('./User.js');
 
 const chatSchema = mongoose.Schema({
     firstUser: { 
-		// type: mongoose.Schema.Types.ObjectId,
-		type: Number,
+		type: mongoose.Schema.Types.ObjectId,
 		required: true,
 	},
     secondUser: { 
-		// type: mongoose.Schema.Types.ObjectId,
-		type: Number,
+		type: mongoose.Schema.Types.ObjectId,
 		required: true,
 	},
     latestMessage: { 
