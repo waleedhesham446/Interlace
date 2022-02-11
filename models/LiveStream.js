@@ -1,10 +1,6 @@
 const mongoose = require('mongoose');
 
 const liveStreamSchema = mongoose.Schema({
-    id: { 
-		type: Number,
-		required: true,
-	},
     watching: { 
 		type: Number,
 		required: false,
