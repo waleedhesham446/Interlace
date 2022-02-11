@@ -1,2 +1,2 @@
-# Vuexy
-A node js API for the mobile application 'Vuexy'
+# Reyzi
+A node js API for the mobile application 'Reyzi'
