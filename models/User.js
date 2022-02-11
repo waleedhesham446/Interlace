@@ -13,6 +13,10 @@ const userSchema = mongoose.Schema({
 		type: String,
 		required: true,
 	},
+    password: { 
+		type: String,
+		required: true,
+	},
     username: { 
 		type: String,
 		required: true,
@@ -71,7 +75,7 @@ const userSchema = mongoose.Schema({
 		type: Boolean,
 		required: false,
         default: false,
-	}
+	},
 });
 
 const User = mongoose.model('User', userSchema);
