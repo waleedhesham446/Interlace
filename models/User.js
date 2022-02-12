@@ -39,6 +39,11 @@ const userSchema = mongoose.Schema({
 		required: false,
         default: 0,
 	},
+    followersIds: { 
+		type: [mongoose.Schema.Types.ObjectId],
+		required: false,
+        default: [],
+	},
     fans: { 
 		type: Number,
 		required: false,
