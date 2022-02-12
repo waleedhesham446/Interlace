@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const { userSchema } = require('./User.js');
 
 const chatSchema = mongoose.Schema({
     firstUser: { 
@@ -12,20 +11,16 @@ const chatSchema = mongoose.Schema({
 	},
     latestMessage: { 
 		type: String,
-		required: true,
+		required: false,
 	},
     latestMessageDate: { 
 		type: Date,
-        required: true,
+        required: false,
 	},
     latestSenderId: { 
 		type: mongoose.Schema.Types.ObjectId,
-		required: true,
+		required: false,
 	},
-    user: {
-        type: userSchema,
-        required: true,
-    }
 });
 
 const Chat = mongoose.model('Chat', chatSchema);

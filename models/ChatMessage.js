@@ -12,7 +12,7 @@ const chatMessageSchema = mongoose.Schema({
 	},
     text: { 
 		type: String,
-		required: true,
+		required: false,
 	},
     fileUrl: { 
 		type: String,
@@ -20,7 +20,7 @@ const chatMessageSchema = mongoose.Schema({
 	},
     date: { 
 		type: Date,
-        required: false,
+        required: true,
         default: new Date(),
 	},
     senderId: { 
