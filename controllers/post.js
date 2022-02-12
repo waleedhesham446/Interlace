@@ -1,5 +1,6 @@
 const { User } = require('../models/User');
 const { Post } = require('../models/Post');
+const { PostComment } = require('../models/PostComment');
 
 const getByPostId = async (req, res) => {
     const { postId } = req.params;
@@ -80,7 +81,7 @@ const getPostsOfUser = async (req, res) => {
     }
 }
 
-const create = async (req, res) => {
+const createPost = async (req, res) => {
     const { location, caption, image, allowComments, hashtag, privacy, myId } = req.body;
 
     try {
@@ -95,4 +96,35 @@ const create = async (req, res) => {
     }
 }
 
-module.exports = { getByPostId, getMyPosts, getPostsByType, getPostsOfUser, create };
+const createComment = async (req, res) => {
+    const { postId } = req.params;
+    const { content, myId } = req.body;
+
+    try {
+        const user = await User.findById(myId);
+        if(!user) return res.status(404).json({ message: 'This user is not registered' });
+        
+        if(!content) return res.status(410).json({ message: 'Invalid value' });
+        
+        const comment = await PostComment.create({ postId, content, user });
+        
+        const post = await Post.findByIdAndUpdate(postId, { $inc: { commentsCount: 1 } });
+
+        res.status(200).json(comment);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+}
+
+const getCommentsOfPost = async (req, res) => {
+    const { postId } = req.params;
+
+    try {
+        const comments = await PostComment.find({ postId });
+        res.status(200).json(comments);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+}
+
+module.exports = { getByPostId, getMyPosts, getPostsByType, getPostsOfUser, createPost, createComment, getCommentsOfPost };
