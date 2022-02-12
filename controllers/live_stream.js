@@ -17,11 +17,8 @@ const getWatchers = async (req, res) => {
 
     try {
         const { watchersIds } = await LiveStream.findById(liveId);
-        let watchersList = watchersIds.map(async(id) => {
-            let watcher = await User.findById(id);
-            delete watcher.password;
-            return watcher;
-        });
+        let watchersList = await User.find({ _id: { $in: watchersIds } });
+        watchersList.forEach(watcher => delete watcher.password);
         res.status(200).json(watchersList);
     } catch (error) {
         res.status(500).json(error);
