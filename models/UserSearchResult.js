@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 const { userSchema } = require('./User.js');
 
 const userSearchResultSchema = mongoose.Schema({
-    iamFollowing: { 
-		type: Boolean,
+    mytId: { 
+		type: mongoose.Schema.Types.ObjectId,
 		required: true,
 	},
     user: {
