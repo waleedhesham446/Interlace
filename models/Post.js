@@ -43,6 +43,11 @@ const postSchema = mongoose.Schema({
 		required: true,
         enum: ['everyone', 'followers', 'onlyMe'],
 	},
+	likersIds: {
+        type: [mongoose.Schema.Types.ObjectId],
+		required: false,
+        default: [],
+    },
     user: {
         type: userSchema,
         required: true,
