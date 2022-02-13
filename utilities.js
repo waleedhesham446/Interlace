@@ -1,5 +1,8 @@
 const { User } = require('./models/User');
 const { Sticker } = require('./models/Sticker');
+const { ChatMessage } = require('./models/ChatMessage');
+const { Post } = require('./models/Post');
+const { Video } = require('./models/Video');
 
 function socket_io_communication(io) {
     let onlineSockets = {};
@@ -68,9 +71,17 @@ function socket_io_communication(io) {
                 socket.broadcast.to(sockId).emit('liveStreamStickerSent', { user, sticker });
             });
         });
-        socket.on('sendChatMessage', ({ chatId, receiverId, text }) => {
+        socket.on('sendChatMessage', ({ chatId, receiverId, msgId }) => {
+            const msg = await ChatMessage.findById(msgId);
+            if(msg.type === 'videoShare'){
+                const video = await Video.findById(msg.videoId);
+                msg.video = video;
+            }else if(msg.type === 'postShare'){
+                const post = await Post.findById(msg.postId);
+                msg.post = post;
+            }
             const receiverSocketId = Object.keys(onlineSockets).find(key => onlineSockets[key] === receiverId);
-            socket.broadcast.to(receiverSocketId).emit('chatMessageReceived', { chatId, senderId: onlineSockets[socket.id], text });
+            socket.broadcast.to(receiverSocketId).emit('chatMessageReceived', { chatId, senderId: onlineSockets[socket.id], msg });
         });
         socket.on("disconnect", () => {
             delete onlineSockets[socket.id];
