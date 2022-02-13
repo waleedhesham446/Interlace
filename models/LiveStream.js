@@ -8,8 +8,9 @@ const liveStreamSchema = mongoose.Schema({
     },
     watching: { 
 		type: Number,
-		required: false,
+		required: true,
         default: 0,
+        min: 0,
 	},
     username: { 
         type: String,
@@ -17,7 +18,7 @@ const liveStreamSchema = mongoose.Schema({
     },
     url: { 
         type: String,
-        required: true,
+        required: false,
     },
     country: { 
         type: String,
@@ -30,10 +31,14 @@ const liveStreamSchema = mongoose.Schema({
     coins: { 
 		type: Number,
 		required: true,
+        default: 0,
+        min: 0,
 	},
     stickers: { 
 		type: Number,
 		required: true,
+        default: 0,
+        min: 0,
 	},
 });
 
