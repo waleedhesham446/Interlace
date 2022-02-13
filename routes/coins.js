@@ -14,7 +14,7 @@ router.get('/records/:myId', getMyCoinRecords);
 router.get('/offers/list', getAllOffers);
 router.post('/recharge/:myId', buyCoins);
 router.post('/video/:myId', watchVideo);
-router.post('/referral/submit/:myId', referralSubmit);      //  ??
-router.get('/referral/info/:myId', referralInfo);           //  ??
+router.post('/referral/submit/:myId', referralSubmit);
+router.get('/referral/info/:myId', referralInfo);
 
 module.exports = router;
