@@ -7,7 +7,7 @@ const referralInfoSchema = mongoose.Schema({
 	},
     myReferralsCount: { 
 		type: Number,
-		required: false,
+		required: true,
         default: 0,
 	},
 });

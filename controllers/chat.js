@@ -56,6 +56,8 @@ const sendMessage = async (req, res) => {
         const chat = await Chat.findById(chatId);
         if(!chat) return res.status(404).json({ message: 'This chat does not exist' });
 
+        if(!text && !fileUrl) return res.status(410).json({ message: 'Invalid empty message' });
+
         const message = await ChatMessage.create({ chatId, type, text, fileUrl, senderId });
         let lastMsg = text;
         if(type === 'file') lastMsg = 'You have received a file';

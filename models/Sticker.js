@@ -8,12 +8,12 @@ const stickerSchema = mongoose.Schema({
 	},
     price: { 
 		type: Number,
-		required: false,
-        default: 0,
+		required: true,
+        min: 1,
 	},
     isNew: { 
         type: Boolean,
-        required: false,
+        required: true,
         default: true,
     },
     url: { 

@@ -4,10 +4,11 @@ const cashoutSchema = mongoose.Schema({
     amount: { 
 		type: Number,
 		required: true,
+		min: 1,
 	},
     date: { 
 		type: Date,
-        required: false,
+        required: true,
         default: new Date(),
 	},
     method: {
@@ -19,6 +20,7 @@ const cashoutSchema = mongoose.Schema({
 		type: String,
 		required: true,
 		enum: ['PENDING', 'COMPLETED'],
+		default: 'PENDING',
 	},
 });
 

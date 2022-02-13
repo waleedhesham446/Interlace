@@ -11,7 +11,7 @@ const bannerSchema = mongoose.Schema({
 	},
     isVip: { 
 		type: Boolean,
-		required: false,
+		required: true,
         default: false,
 	}
 });

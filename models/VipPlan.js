@@ -12,14 +12,16 @@ const vipPlanSchema = mongoose.Schema({
     days: { 
 		type: Number,
 		required: true,
+		min: 1,
 	},
     price: { 
 		type: Number,
 		required: true,
+		min: 1,
 	},
     auto_renew: { 
 		type: Boolean,
-		required: false,
+		required: true,
         default: false,
 	},
 });
