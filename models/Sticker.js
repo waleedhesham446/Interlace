@@ -11,7 +11,7 @@ const stickerSchema = mongoose.Schema({
 		required: true,
         min: 1,
 	},
-    isNew: { 
+    isNewSticker: { 
         type: Boolean,
         required: true,
         default: true,
