@@ -1,6 +1,8 @@
 const { User } = require('../models/User');
 const { Chat } = require('../models/Chat');
 const { ChatMessage } = require('../models/ChatMessage');
+const { Post } = require('../models/Post');
+const { Video } = require('../models/Video');
 
 const getMyChats = async (req, res) => {
     const { myId } = req.params;
@@ -50,19 +52,29 @@ const getMessagesOfChat = async (req, res) => {
 
 const sendMessage = async (req, res) => {
     const { chatId } = req.params;
-    const { type, text, fileUrl, senderId } = req.body;
+    const { type, text, fileUrl, senderId, videoId, postId } = req.body;
 
     try {
         const chat = await Chat.findById(chatId);
         if(!chat) return res.status(404).json({ message: 'This chat does not exist' });
 
-        if(!text && !fileUrl) return res.status(410).json({ message: 'Invalid empty message' });
+        if(!text && !fileUrl && !videoId && !postId ) return res.status(410).json({ message: 'Invalid empty message' });
 
-        const message = await ChatMessage.create({ chatId, type, text, fileUrl, senderId });
+        const message = await ChatMessage.create({ chatId, type, text, fileUrl, senderId, videoId, postId });
         let lastMsg = text;
-        if(type === 'file') lastMsg = 'You have received a file';
-        else if(type === 'voice') lastMsg = 'You have received a voice message';
-        else if(type === 'image') lastMsg = 'You have received an image';
+        if(type === 'file') lastMsg = 'file';
+        else if(type === 'voice') lastMsg = 'message';
+        else if(type === 'image') lastMsg = 'image';
+        else if(type === 'videoShare'){
+            const video = await Video.findById(videoId);
+            message.video = video;
+            lastMsg = 'videoShare';
+        }
+        else if(type === 'postShare'){
+            const post = await Post.findById(postId);
+            message.post = post;
+            lastMsg = 'postShare';
+        }
 
         const updatedChat = await Chat.findByIdAndUpdate(chatId, { latestMessage: lastMsg, latestMessageDate: message.date, latestSenderId: senderId });
 

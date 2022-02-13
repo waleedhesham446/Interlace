@@ -8,7 +8,7 @@ const chatMessageSchema = mongoose.Schema({
     type: { 
 		type: String,
 		required: true,
-        enum: ['text', 'file', 'voice', 'image'],
+        enum: ['text', 'file', 'voice', 'image', 'videoShare', 'postShare'],
 	},
     text: { 
 		type: String,
@@ -22,6 +22,14 @@ const chatMessageSchema = mongoose.Schema({
 		type: Date,
         required: true,
         default: new Date(),
+	},
+    videoId: { 
+		type: mongoose.Schema.Types.ObjectId,
+		required: false,
+	},
+    postId: { 
+		type: mongoose.Schema.Types.ObjectId,
+		required: false,
 	},
     senderId: { 
 		type: mongoose.Schema.Types.ObjectId,
