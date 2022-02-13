@@ -4,8 +4,10 @@ const {
     getWatchers,
     create,
     getComments,
-    createComment
-} = require('../controllers/user');
+    createComment,
+    sendGift, 
+    sendSticker
+} = require('../controllers/live_stream');
 
 const router = express.Router();
 
@@ -14,5 +16,8 @@ router.get('/:liveId/watchers', getWatchers);
 router.post('/create', create);
 router.get('/:liveId/comments', getComments);
 router.post('/:liveId/createComment', createComment);
+
+router.post('/:liveId/gift', sendGift);
+router.post('/:liveId/sticker', sendSticker);
 
 module.exports = router;
