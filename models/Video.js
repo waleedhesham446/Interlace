@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const { userSchema } = require('./User.js');
 
 const videoSchema = mongoose.Schema({
     description: { 
@@ -10,23 +9,30 @@ const videoSchema = mongoose.Schema({
         type: Number,
         required: true,
         default: 0,
+        min: 0,
     },
     commentsCount: { 
 		type: Number,
 		required: true,
         default: 0,
+        min: 0,
 	},
     url: { 
 		type: String,
-		required: false,
+		required: true,
+	},
+    date: { 
+		type: Date,
+        required: true,
+        default: new Date(),
 	},
 	likersIds: {
         type: [mongoose.Schema.Types.ObjectId],
 		required: false,
         default: [],
     },
-    user: {
-        type: userSchema,
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
         required: true,
     },
 });

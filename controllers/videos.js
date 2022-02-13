@@ -1,11 +1,9 @@
 const { User } = require('../models/User');
 const { Video } = require('../models/Video');
 const { VideoComment } = require('../models/VideoComment');
-const { post } = require('../routes/coins');
 
 const getAllVideos = async (req, res) => {
     const { myId } = req.params;
-
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
@@ -14,7 +12,6 @@ const getAllVideos = async (req, res) => {
         const videosWithLikeFlag = videos.map((video) => {
             let iLiked = false;
             if(video.likersIds.indexOf(myId) !== -1) iLiked = true;
-            delete video.user.password;
             return { video, iLiked };
         });
 
@@ -27,7 +24,6 @@ const getAllVideos = async (req, res) => {
 const getVideoById = async (req, res) => {
     const { videoId } = req.params;
     const { myId } = req.query;
-
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
@@ -37,7 +33,6 @@ const getVideoById = async (req, res) => {
 
         let iLiked = false;
         if(video.likersIds.indexOf(myId) !== -1) iLiked = true;
-        delete video.user.password;
 
         const videoWithLikeFlag = { iLiked, video };
         res.status(200).json(videoWithLikeFlag);
@@ -48,16 +43,14 @@ const getVideoById = async (req, res) => {
 
 const getMyVideos = async (req, res) => {
     const { myId } = req.params;
-
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
         
-        const videos = await Video.find({ user });
+        const videos = await Video.find({ userId: myId });
         const videosWithLikeFlag = videos.map((video) => {
             let iLiked = false;
             if(video.likersIds.indexOf(myId) !== -1) iLiked = true;
-            delete video.user.password;
             return { video, iLiked };
         });
 
@@ -69,17 +62,15 @@ const getMyVideos = async (req, res) => {
 
 const getVideosOfPerson = async (req, res) => {
     const { hisId, myId } = req.params;
-
     try {
         const me = await User.findById(myId);
         const him = await User.findById(hisId);
         if(!me || !him) return res.status(404).json({ message: 'This user is not registered' });
         
-        const videos = await Video.find({ user: him });
+        const videos = await Video.find({ userId: hisId });
         const videosWithLikeFlag = videos.map((video) => {
             let iLiked = false;
             if(video.likersIds.indexOf(myId) !== -1) iLiked = true;
-            delete video.user.password;
             return { video, iLiked };
         });
 
@@ -98,9 +89,8 @@ const createVideo = async (req, res) => {
 
         if(!url) return res.status(410).json({ message: 'Invalid value' });
         
-        const video = await Video.create({ description, url, user });
-        delete video.user.password;
-
+        const video = await Video.create({ description, url, userId: myId });
+        const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { videos: 1 } });
         res.status(200).json(video);
     } catch (error) {
         res.status(500).json(error);
@@ -109,7 +99,6 @@ const createVideo = async (req, res) => {
 
 const createComment = async (req, res) => {
     const { postId, content, myId } = req.params;
-
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
@@ -119,10 +108,8 @@ const createComment = async (req, res) => {
 
         if(!content) return res.status(410).json({ message: 'Invalid value' });
 
-        const comment = await VideoComment.create({ postId, content, user });
+        const comment = await VideoComment.create({ postId, content, userId: myId });
         const updatedVideo = await Video.findByIdAndUpdate(postId, { $inc: { commentsCount: 1 } });
-        delete comment.user.password;
-        delete updatedVideo.user.password;
 
         res.status(200).json({ comment, updatedVideo });
     } catch (error) {
@@ -132,14 +119,9 @@ const createComment = async (req, res) => {
 
 const getCommentsOfVideo = async (req, res) => {
     const { videoId } = req.params;
-
     try {
         const comments = await VideoComment.find({ postId: videoId });
-        const commentsWithoutUsersPasswords = comments.map((comment) => {
-            delete comment.user.password;
-            return comment;
-        });
-        res.status(200).json(commentsWithoutUsersPasswords);
+        res.status(200).json(comments);
     } catch (error) {
         res.status(500).json(error);
     }
@@ -156,7 +138,6 @@ const likeVideo = async (req, res) => {
         if(video.likersIds.indexOf(myId) !== -1) return res.status(410).json({ message: 'This user already liked this video' });
 
         const updatedVideo = await Video.findByIdAndUpdate(videoId, { $push: { likersIds: myId  }, $inc: { likesCount: 1 } });
-        delete updatedVideo.user.password;
 
         res.status(200).json(updatedVideo);
     } catch (error) {
@@ -175,7 +156,6 @@ const unlikeVideo = async (req, res) => {
         if(video.likersIds.indexOf(myId) === -1) return res.status(410).json({ message: 'This user did not like this video' });
 
         const updatedVideo = await Video.findByIdAndUpdate(postId, { $pull: { likersIds: myId  }, $inc: { likesCount: -1 } });
-        delete updatedVideo.user.password;
 
         res.status(200).json(updatedVideo);
     } catch (error) {
