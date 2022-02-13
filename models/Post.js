@@ -1,42 +1,43 @@
 const mongoose = require('mongoose');
-const { userSchema } = require('./User.js');
 
 const postSchema = mongoose.Schema({
     location: { 
 		type: String,
-		required: true,
+		required: false,
 	},
     time: { 
 		type: Date,
-        required: false,
+        required: true,
         default: new Date(),
 	},
     caption: { 
 		type: String,
-		required: true,
+		required: false,
 	},
     image: { 
 		type: String,
-		required: true,
+		required: false,
 	},
     commentsCount: { 
 		type: Number,
-		required: false,
+		required: true,
         default: 0,
+		min: 0,
 	},
     likesCount: { 
 		type: Number,
-		required: false,
+		required: true,
         default: 0,
+		min: 0,
 	},
     allowComments: { 
 		type: Boolean,
-		required: false,
+		required: true,
         default: true,
 	},
     hashtag: { 
 		type: String,
-		required: true,
+		required: false,
 	},
     privacy: { 
 		type: String,
@@ -48,10 +49,10 @@ const postSchema = mongoose.Schema({
 		required: false,
         default: [],
     },
-    user: {
-        type: userSchema,
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
         required: true,
-    }
+    },
 });
 
 const Post = mongoose.model('Post', postSchema);

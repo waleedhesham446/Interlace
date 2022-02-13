@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const { userSchema } = require('./User.js');
 
 const postCommentSchema = mongoose.Schema({
     postId: { 
@@ -12,13 +11,13 @@ const postCommentSchema = mongoose.Schema({
 	},
     date: { 
 		type: Date,
-        required: false,
+        required: true,
         default: new Date(),
 	},
-    user: {
-        type: userSchema,
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
         required: true,
-    }
+    },
 });
 
 const PostComment = mongoose.model('PostComment', postCommentSchema);
