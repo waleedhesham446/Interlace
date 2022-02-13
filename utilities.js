@@ -71,7 +71,7 @@ function socket_io_communication(io) {
                 socket.broadcast.to(sockId).emit('liveStreamStickerSent', { user, sticker });
             });
         });
-        socket.on('sendChatMessage', ({ chatId, receiverId, msgId }) => {
+        socket.on('sendChatMessage', async({ chatId, receiverId, msgId }) => {
             const msg = await ChatMessage.findById(msgId);
             if(msg.type === 'videoShare'){
                 const video = await Video.findById(msg.videoId);
