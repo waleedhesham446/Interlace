@@ -31,45 +31,56 @@ const userSchema = mongoose.Schema({
 	},
     level: { 
 		type: Number,
-		required: false,
-        default: 0,
+		required: true,
+        default: 1,
+		min: 1,
+		max: 5,
 	},
     followers: { 
 		type: Number,
-		required: false,
+		required: true,
         default: 0,
+		min: 0,
 	},
     followersIds: { 
 		type: [mongoose.Schema.Types.ObjectId],
-		required: false,
+		required: true,
         default: [],
 	},
     fans: { 
 		type: Number,
-		required: false,
+		required: true,
         default: 0,
+		min: 0,
 	},
     videos: { 
 		type: Number,
-		required: false,
+		required: true,
         default: 0,
+		min: 0,
 	},
     age: { 
 		type: Number,
 		required: true,
+		min: 10,
 	},
     posts: { 
 		type: Number,
-		required: false,
+		required: true,
         default: 0,
+		min: 0,
 	},
     coin: { 
 		type: Number,
 		required: true,
+		default: 0,
+		min: 0,
 	},
     rCoin: { 
 		type: Number,
 		required: true,
+		default: 0,
+		min: 0,
 	},
     gender: {
 		type: String,
@@ -78,7 +89,7 @@ const userSchema = mongoose.Schema({
 	},
     isVip: { 
 		type: Boolean,
-		required: false,
+		required: true,
         default: false,
 	},
 });
