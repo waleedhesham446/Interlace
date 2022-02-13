@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const { userSchema } = require('./User.js');
 
 const liveCommentSchema = mongoose.Schema({
     liveId: { 
@@ -12,11 +11,11 @@ const liveCommentSchema = mongoose.Schema({
 	},
     date: { 
 		type: Date,
-        required: false,
+        required: true,
         default: new Date(),
 	},
-    user: {
-        type: userSchema,
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
         required: true,
     },
 });
