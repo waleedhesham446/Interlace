@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const referralInfoSchema = mongoose.Schema({
     myReferralCode: { 
-		type: String,
+		type: mongoose.Schema.Types.ObjectId,
 		required: true,
 	},
     myReferralsCount: { 
