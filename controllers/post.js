@@ -101,8 +101,11 @@ const createPost = async (req, res) => {
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
+        
+        if(!caption && !image) return res.status(410).json({ message: 'Invalid empty post' });
 
         const post = await Post.create({ location, caption, image, allowComments, hashtag, privacy, userId: myId });
+        const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { posts: 1 } });
         
         res.status(200).json(post);
     } catch (error) {
