@@ -7,17 +7,16 @@ const rCoinRecordSchema = mongoose.Schema({
 	},
     amount: { 
 		type: Number,
-		required: false,
-        default: 0,
+		required: true,
+		min: 1,
 	},
     isIncrease: { 
 		type: Boolean,
-		required: false,
-        default: false,
+		required: true,
 	},
     by: { 
 		type: String,
-		required: true,
+		required: false,
 	},
     usageType: {
 		type: String,
