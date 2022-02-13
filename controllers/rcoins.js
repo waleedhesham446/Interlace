@@ -1,5 +1,6 @@
 const { User } = require('../models/User');
 const { RCoinRecord } = require('../models/RCoinRecord');
+const { CoinRecord } = require('../models/CoinRecord');
 const { Cashout } = require('../models/Cashout');
 
 const getMyRCoinRecords = async (req, res) => {
@@ -15,7 +16,6 @@ const getMyRCoinRecords = async (req, res) => {
 const convert = async (req, res) => {
     const { myId } = req.params;
     const { amount } = req.query;
-    const { by } = req.body;
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
@@ -24,7 +24,8 @@ const convert = async (req, res) => {
         if(amount > user.rCoin) return res.status(411).json({ message: 'You do not have enough rcoins' });
 
         const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { coin: amount, rCoin: -1*amount } });
-        const newRecord = await RCoinRecord.create({ userId: myId, amount, isIncrease: false, by, usageType: 'convertToCoin' });
+        const newRCoinRecord = await RCoinRecord.create({ userId: myId, amount, isIncrease: false, usageType: 'convertToCoin' });
+        const newCoinRecord = await CoinRecord.create({ userId: myId, amount, isIncrease: true, usageType: 'RcoinConvertion' });
         delete updatedUser.password;
 
         res.status(200).json({ updatedUser, newRecord });
@@ -46,7 +47,7 @@ const getCashoutHistory = async (req, res) => {
 const makeCashout = async (req, res) => {
     const { myId } = req.params;
     const { amount } = req.query;
-    const { method, by } = req.body;
+    const { method } = req.body;
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
@@ -55,7 +56,7 @@ const makeCashout = async (req, res) => {
         if(amount > user.rCoin) return res.status(411).json({ message: 'You do not have enough rcoins' });
 
         const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { rCoin: -1*amount } });
-        const newRecord = await RCoinRecord.create({ userId: myId, amount, isIncrease: false, by, usageType: 'cashout' });
+        const newRecord = await RCoinRecord.create({ userId: myId, amount, isIncrease: false, usageType: 'cashout' });
         delete updatedUser.password;
         const newCashout = await Cashout.create({ userId: myId, amount, method });
 

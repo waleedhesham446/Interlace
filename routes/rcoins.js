@@ -9,8 +9,8 @@ const {
 const router = express.Router();
 
 router.get('/records/:myId', getMyRCoinRecords);
-router.post('/convert/:myId', convert);                     //  by??
+router.post('/convert/:myId', convert);
 router.get('/cashout/history/:myId', getCashoutHistory);
-router.post('/cashout/:myId', makeCashout);                 //  by??
+router.post('/cashout/:myId', makeCashout);
 
 module.exports = router;
