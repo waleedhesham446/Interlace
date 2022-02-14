@@ -26,8 +26,7 @@ const convert = async (req, res) => {
         if(amount > user.rCoin) return res.status(411).json({ message: 'You do not have enough rcoins' });
 
         const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { coin: amount, rCoin: -1*amount } });
-        const newRCoinRecord = await RCoinRecord.create({ userId: myId, amount, isIncrease: false, usageType: 'convertToCoin' });
-        const newCoinRecord = await CoinRecord.create({ userId: myId, amount, isIncrease: true, usageType: 'RcoinConvertion' });
+        const newRecord = await RCoinRecord.create({ userId: myId, amount, isIncrease: false, usageType: 'convertToCoin' });
         delete updatedUser.password;
 
         res.status(200).json({ updatedUser, newRecord });

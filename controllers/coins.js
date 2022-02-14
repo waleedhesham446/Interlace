@@ -23,6 +23,28 @@ const getAllOffers = async (req, res) => {
     }
 }
 
+const convert = async (req, res) => {
+    const { myId } = req.params;
+    const { amount } = req.query;
+    const { actualEmail } = req.body;
+    try {
+        const user = await User.findById(myId);
+        if(!user) return res.status(404).json({ message: 'This user is not registered' });
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
+
+        if(amount <= 0) return res.status(410).json({ message: 'Invalid Value' });
+        if(amount > user.coin) return res.status(411).json({ message: 'You do not have enough coins' });
+
+        const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { coin: -1*amount, rCoin: amount } });
+        const newCoinRecord = await CoinRecord.create({ userId: myId, amount, isIncrease: false, usageType: 'RcoinConvertion' });
+        delete updatedUser.password;
+
+        res.status(200).json({ updatedUser, newCoinRecord });
+    } catch (error) {
+        res.status(500).json(error);
+    }
+}
+
 const buyCoins = async (req, res) => {
     const { myId } = req.params;
     const { id, coins, price, discount, actualEmail } = req.body;
@@ -102,4 +124,4 @@ const referralInfo = async (req, res) => {
     }
 }
 
-module.exports = { getMyCoinRecords, getAllOffers, buyCoins, watchVideo, referralSubmit, referralInfo };
+module.exports = { getMyCoinRecords, getAllOffers, convert, buyCoins, watchVideo, referralSubmit, referralInfo };

@@ -2,6 +2,7 @@ const express = require('express');
 const {
     getMyCoinRecords,
     getAllOffers,
+    convert,
     buyCoins,
     watchVideo,
     referralSubmit,
@@ -13,6 +14,7 @@ const router = express.Router();
 
 router.get('/records/:myId', getMyCoinRecords);
 router.get('/offers/list', getAllOffers);
+router.post('/convert/:myId', auth, convert);
 router.post('/recharge/:myId', auth, buyCoins);
 router.post('/video/:myId', auth, watchVideo);
 router.post('/referral/submit/:myId', auth, referralSubmit);
