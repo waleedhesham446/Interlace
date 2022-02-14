@@ -28,6 +28,8 @@ app.use(cors());
 app.use(express.static("public"));
 app.use("/images", express.static(path.join("uploads/images")));
 app.use("/videos", express.static(path.join("uploads/videos")));
+app.use("/files", express.static(path.join("uploads/files")));
+app.use("/voices", express.static(path.join("uploads/voices")));
 
 app.use('/banners', bannerRoutes);
 app.use('/chat', chatRoutes);
