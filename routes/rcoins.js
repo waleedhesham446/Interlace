@@ -5,12 +5,13 @@ const {
     getCashoutHistory,
     makeCashout
 } = require('../controllers/rcoins');
+const auth = require('../middlewares/auth');
 
 const router = express.Router();
 
 router.get('/records/:myId', getMyRCoinRecords);
-router.post('/convert/:myId', convert);
+router.post('/convert/:myId', auth, convert);
 router.get('/cashout/history/:myId', getCashoutHistory);
-router.post('/cashout/:myId', makeCashout);
+router.post('/cashout/:myId', auth, makeCashout);
 
 module.exports = router;

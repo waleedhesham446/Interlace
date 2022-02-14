@@ -97,11 +97,12 @@ const getPostsOfUser = async (req, res) => {
 }
 
 const createPost = async (req, res) => {
-    const { location, caption, image, allowComments, hashtag, privacy, myId } = req.body;
+    const { location, caption, image, allowComments, hashtag, privacy, myId, actualEmail } = req.body;
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
-        
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
+
         if(!caption && !image) return res.status(410).json({ message: 'Invalid empty post' });
 
         const post = await Post.create({ location, caption, image, allowComments, hashtag, privacy, userId: myId });
@@ -115,11 +116,12 @@ const createPost = async (req, res) => {
 
 const createComment = async (req, res) => {
     const { postId } = req.params;
-    const { content, myId } = req.body;
+    const { content, myId, actualEmail } = req.body;
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
-        
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
+
         if(!content) return res.status(410).json({ message: 'Invalid value' });
         
         const comment = await PostComment.create({ postId, content, userId: myId });
@@ -145,9 +147,11 @@ const getCommentsOfPost = async (req, res) => {
 const likePost = async (req, res) => {
     const { myId } = req.params;
     const { postId } = req.query;
+    const { actualEmail } = req.body;
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
 
         const post1 = await Post.findById(postId);
         if(post1.likersIds.indexOf(myId) !== -1) return res.status(410).json({ message: 'This user already liked this post' });
@@ -163,10 +167,12 @@ const likePost = async (req, res) => {
 const unlikePost = async (req, res) => {
     const { myId } = req.params;
     const { postId } = req.query;
+    const { actualEmail } = req.body;
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
-        
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
+
         const post1 = await Post.findById(postId);
         if(post1.likersIds.indexOf(myId) === -1) return res.status(410).json({ message: 'This user did not like this post' });
 

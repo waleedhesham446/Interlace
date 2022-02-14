@@ -8,6 +8,7 @@ const {
     update,
     updatePicture
 } = require('../controllers/user');
+const auth = require('../middlewares/auth');
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ router.get('/login', login);
 router.get('/logout', logout);
 router.get('/search/:myId', search);
 router.get('/:username', getByUserName);    //  UP??
-router.post('/update/:myId', update);
-router.post('/updatePicture/:myId', updatePicture);
+router.post('/update/:myId', auth, update);
+router.post('/updatePicture/:myId', auth, updatePicture);
 
 module.exports = router;

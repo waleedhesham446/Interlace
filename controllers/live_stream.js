@@ -26,8 +26,12 @@ const getWatchers = async (req, res) => {
 }
 
 const create = async (req, res) => {
-    const { watching, username, country, image, coins, stickers } = req.body;
+    const { watching, username, country, image, coins, stickers, actualEmail } = req.body;
     try {
+        const user = await User.findOne({ username });
+        if(!user) return res.status(404).json({ message: 'This user is not registered' });
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
+
         const newLive = await LiveStream.create({ watching, username, url, country, image, coins, stickers });
         const newLiveWithURL = await LiveStream.findByIdAndUpdate(newLive._id, { url: `${newLive._id}` });
         res.status(200).json(newLiveWithURL.url);
@@ -54,10 +58,11 @@ const getComments = async (req, res) => {
 
 const createComment = async (req, res) => {
     const { liveId } = req.params;
-    const { myId, content } = req.body;
+    const { myId, content, actualEmail } = req.body;
     try {
         const user = await User.findById(hisId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
 
         const live = await LiveStream.findById(liveId);
         if(!live) return res.status(404).json({ message: 'This live stream does not exist' });
@@ -79,10 +84,12 @@ const createComment = async (req, res) => {
 const sendGift = async (req, res) => {
     const { liveId } = req.params;
     const { myId, hisId, amount } = req.query;
+    const { actualEmail } = req.body;
     try {
         const me = await User.findById(myId);
         const him = await User.findById(hisId);
         if(!me || !him) return res.status(404).json({ message: 'This user is not registered' });
+        if(me.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
 
         const live = await LiveStream.findById(liveId);
         if(!live) return res.status(404).json({ message: 'This live stream does not exist' });
@@ -107,10 +114,12 @@ const sendGift = async (req, res) => {
 const sendSticker = async (req, res) => {
     const { liveId } = req.params;
     const { myId, hisId, stickerId } = req.query;
+    const { actualEmail } = req.body;
     try {
         const me = await User.findById(myId);
         const him = await User.findById(hisId);
         if(!me || !him) return res.status(404).json({ message: 'This user is not registered' });
+        if(me.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
 
         const live = await LiveStream.findById(liveId);
         if(!live) return res.status(404).json({ message: 'This live stream does not exist' });

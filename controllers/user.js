@@ -1,6 +1,9 @@
 const bcrypt = require('bcryptjs');
+const jwt = require("jsonwebtoken");
+const dotenv = require('dotenv');
 const { User } = require('../models/User');
 const { ReferralInfo } = require('../models/ReferralInfo');
+dotenv.config();
 
 const signup = async (req, res) => {
     const { name, image, email, password, username, country, bio, age, gender, isVip } = req.body;
@@ -30,7 +33,8 @@ const login = async (req, res) => {
         const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
         if(!isPasswordCorrect) return res.status(400).json({ message: 'Invalid username or password' });
         delete existingUser.password;
-        res.status(200).json(existingUser);
+        const token = jwt.sign({ email: existingUser.email}, process.env.SECRET, { expiresIn: "365d" });
+        res.status(200).json({ existingUser, token });
     } catch (error) {
         res.status(500).json(error);
     }
@@ -79,7 +83,11 @@ const getByUserName = async (req, res) => {
 const update = async (req, res) => {
     const { myId } = req.params;
     const { username, bio } = req.query;
+    const { actualEmail } = req.body;
     try {
+        const user = await User.findById(myId);
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
+
         const existingUserName = await User.findOne({ username });
         if(existingUserName) return res.status(410).json({ message: 'username already exists' });
 
@@ -95,9 +103,13 @@ const update = async (req, res) => {
 const updatePicture = async (req, res) => {
     const { myId } = req.params;
     const { picture } = req.query;
+    const { actualEmail } = req.body;
     try {
+        const user = await User.findById(myId);
+        if(!user) return res.status(404).json({ message: 'This user is not registered' });
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
+
         const updatedUser = await User.findByIdAndUpdate(myId, { image: picture });
-        if(!updatedUser) return res.status(404).json({ message: 'This user is not registered' });
         delete updatedUser.password;
         res.status(200).json(updatedUser);
     } catch (error) {

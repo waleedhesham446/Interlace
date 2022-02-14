@@ -12,11 +12,12 @@ const getAllVipPlans = async (req, res) => {
 
 const buyVipPlan = async (req, res) => {
     const { offerId } = req.params;
-    const { myId } = req.body;
+    const { myId, actualEmail } = req.body;
 
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
 
         const vipPlan = await VipPlan.findById(offerId);
         if(!vipPlan) return res.status(404).json({ message: 'This vip plan dose not exist' });

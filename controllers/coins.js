@@ -25,11 +25,12 @@ const getAllOffers = async (req, res) => {
 
 const buyCoins = async (req, res) => {
     const { myId } = req.params;
-    const { id, coins, price, discount } = req.body;
+    const { id, coins, price, discount, actualEmail } = req.body;
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
-        
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
+
         const offer = await Offer.find({ _id: id, coins, price, discount });
         if(!offer) return res.status(404).json({ message: 'This offer does not exist' });
 
@@ -47,9 +48,13 @@ const buyCoins = async (req, res) => {
 
 const watchVideo = async (req, res) => {
     const { myId } = req.params;
+    const { actualEmail } = req.body;
     try {
+        const user = await User.findById(myId);
+        if(!user) return res.status(404).json({ message: 'This user is not registered' });
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
+
         const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { coin: 1 } });
-        if(!updatedUser) return res.status(404).json({ message: 'This user is not registered' });
         delete updatedUser.password;
         const newRecord = await CoinRecord.create({ userId: myId, amount: 1, isIncrease: true, usageType: 'watchingVideo' });
         res.status(200).json({ updatedUser, newRecord });
@@ -61,11 +66,13 @@ const watchVideo = async (req, res) => {
 const referralSubmit = async (req, res) => {
     const { myId } = req.params;
     const { hisCode } = req.query;
+    const { actualEmail } = req.body;
     try {
         const me = await User.findById(myId);
         const him = await User.findById(hisCode);
         if(!him || !me) return res.status(404).json({ message: 'This user is not registered' });
-        
+        if(me.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
+
         const oldRecord = await ReferralRecord.findOne({ newUserId: myId, oldUserId: hisCode });
         if(oldRecord) return res.status(410).json({ message: 'You have already used this code before' });
         
@@ -87,7 +94,7 @@ const referralSubmit = async (req, res) => {
 const referralInfo = async (req, res) => {
     const { myId } = req.params;
     try {
-        const info = await ReferralInfo.find({ myReferralCode: myId });
+        const info = await ReferralInfo.findOne({ myReferralCode: myId });
         if(!info) return res.status(404).json({ message: 'This user is not registered' });
         res.status(200).json(info);
     } catch (error) {

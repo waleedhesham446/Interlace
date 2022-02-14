@@ -5,12 +5,13 @@ const {
     sendMessage,
     createChat
 } = require('../controllers/chat');
+const auth = require('../middlewares/auth');
 
 const router = express.Router();
 
 router.get('/list/:myId', getMyChats);
 router.get('/:chatId/messages', getMessagesOfChat);
-router.post('/:chatId/send', sendMessage);
-router.post('/create', createChat);
+router.post('/:chatId/send', auth, sendMessage);
+router.post('/create', auth, createChat);
 
 module.exports = router;

@@ -82,10 +82,11 @@ const getVideosOfPerson = async (req, res) => {
 
 const createVideo = async (req, res) => {
     const { description, url, myId } = req.params;
-
+    const { actualEmail } = req.body;
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
 
         if(!url) return res.status(410).json({ message: 'Invalid value' });
         
@@ -99,10 +100,12 @@ const createVideo = async (req, res) => {
 
 const createComment = async (req, res) => {
     const { postId, content, myId } = req.params;
+    const { actualEmail } = req.body;
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
-        
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
+
         const video = await Video.findById(postId);
         if(!video) return res.status(404).json({ message: 'This video does not exist' });
 
@@ -129,10 +132,11 @@ const getCommentsOfVideo = async (req, res) => {
 
 const likeVideo = async (req, res) => {
     const { myId, videoId } = req.params;
-
+    const { actualEmail } = req.body;
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
 
         const video = await Video.findById(videoId);
         if(video.likersIds.indexOf(myId) !== -1) return res.status(410).json({ message: 'This user already liked this video' });
@@ -147,11 +151,12 @@ const likeVideo = async (req, res) => {
 
 const unlikeVideo = async (req, res) => {
     const { myId, videoId } = req.params;
-
+    const { actualEmail } = req.body;
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
-        
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
+
         const video = await Video.findById(videoId);
         if(video.likersIds.indexOf(myId) === -1) return res.status(410).json({ message: 'This user did not like this video' });
 

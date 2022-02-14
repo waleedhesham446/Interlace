@@ -52,9 +52,12 @@ const getMessagesOfChat = async (req, res) => {
 
 const sendMessage = async (req, res) => {
     const { chatId } = req.params;
-    const { type, text, fileUrl, senderId, videoId, postId } = req.body;
+    const { type, text, fileUrl, senderId, videoId, postId, actualEmail } = req.body;
 
     try {
+        const user = await User.findById(senderId);
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
+
         const chat = await Chat.findById(chatId);
         if(!chat) return res.status(404).json({ message: 'This chat does not exist' });
 
@@ -85,9 +88,14 @@ const sendMessage = async (req, res) => {
 }
 
 const createChat = async (req, res) => {
-    const { firstUser, secondUser } = req.body;
+    const { firstUser, secondUser, actualEmail } = req.body;
 
     try {
+        const user1 = await User.findById(firstUser);
+        const user2 = await User.findById(secondUser);
+        if(!user1 || !user2) return res.status(404).json({ message: 'This user is not registered' });
+        if(user1.email != actualEmail && user2.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
+
         const chat = await Chat.find({ $or:[ { firstUser, secondUser }, { firstUser: secondUser, secondUser: firstUser } ] });
         if(chat) return res.status(410).json({ message: 'This chat already exists' });
 

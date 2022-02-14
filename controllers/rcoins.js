@@ -16,9 +16,11 @@ const getMyRCoinRecords = async (req, res) => {
 const convert = async (req, res) => {
     const { myId } = req.params;
     const { amount } = req.query;
+    const { actualEmail } = req.body;
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
 
         if(amount <= 0) return res.status(410).json({ message: 'Invalid Value' });
         if(amount > user.rCoin) return res.status(411).json({ message: 'You do not have enough rcoins' });
@@ -47,10 +49,11 @@ const getCashoutHistory = async (req, res) => {
 const makeCashout = async (req, res) => {
     const { myId } = req.params;
     const { amount } = req.query;
-    const { method } = req.body;
+    const { method, actualEmail } = req.body;
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
 
         if(amount <= 0) return res.status(410).json({ message: 'Invalid Value' });
         if(amount > user.rCoin) return res.status(411).json({ message: 'You do not have enough rcoins' });

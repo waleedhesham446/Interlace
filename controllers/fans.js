@@ -19,11 +19,12 @@ const getAllFollowers = async (req, res) => {
 const follow = async (req, res) => {
     const { myId } = req.params;
     const { hisId } = req.query;
-
+    const { actualEmail } = req.body;
     try {
         const me = await User.findById(myId);
         const him = await User.findById(hisId);
         if(!me || !him) return res.status(404).json({ message: 'This user is not registered' });
+        if(me.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
 
         if(him.followersIds.indexOf(myId) !== -1) return res.status(410).json({ message: 'You already follows this person' });
 
@@ -37,11 +38,12 @@ const follow = async (req, res) => {
 const unfollow = async (req, res) => {
     const { myId } = req.params;
     const { hisId } = req.query;
-
+    const { actualEmail } = req.body;
     try {
         const me = await User.findById(myId);
         const him = await User.findById(hisId);
         if(!me || !him) return res.status(404).json({ message: 'This user is not registered' });
+        if(me.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
 
         if(him.followersIds.indexOf(myId) === -1) return res.status(410).json({ message: 'You does not follow this person' });
 
