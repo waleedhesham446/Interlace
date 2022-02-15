@@ -81,8 +81,9 @@ const getVideosOfPerson = async (req, res) => {
 }
 
 const createVideo = async (req, res) => {
-    const { description, url, myId } = req.params;
-    const { actualEmail } = req.body;
+    const body = JSON.parse(JSON.stringify(req.body));
+    const { myId, description, url, actualEmail } = body;
+    console.log(body);
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
@@ -99,20 +100,20 @@ const createVideo = async (req, res) => {
 }
 
 const createComment = async (req, res) => {
-    const { postId, content, myId } = req.params;
-    const { actualEmail } = req.body;
+    const { videoId } = req.params;
+    const { content, myId, actualEmail } = req.body;
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
         if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
 
-        const video = await Video.findById(postId);
+        const video = await Video.findById(videoId);
         if(!video) return res.status(404).json({ message: 'This video does not exist' });
 
         if(!content) return res.status(410).json({ message: 'Invalid value' });
 
-        const comment = await VideoComment.create({ postId, content, userId: myId });
-        const updatedVideo = await Video.findByIdAndUpdate(postId, { $inc: { commentsCount: 1 } });
+        const comment = await VideoComment.create({ videoId, content, userId: myId });
+        const updatedVideo = await Video.findByIdAndUpdate(videoId, { $inc: { commentsCount: 1 } });
 
         res.status(200).json({ comment, updatedVideo });
     } catch (error) {
@@ -123,7 +124,7 @@ const createComment = async (req, res) => {
 const getCommentsOfVideo = async (req, res) => {
     const { videoId } = req.params;
     try {
-        const comments = await VideoComment.find({ postId: videoId });
+        const comments = await VideoComment.find({ videoId });
         res.status(200).json(comments);
     } catch (error) {
         res.status(500).json(error);
@@ -131,7 +132,8 @@ const getCommentsOfVideo = async (req, res) => {
 }
 
 const likeVideo = async (req, res) => {
-    const { myId, videoId } = req.params;
+    const { myId } = req.params;
+    const { videoId } = req.query;
     const { actualEmail } = req.body;
     try {
         const user = await User.findById(myId);
@@ -150,7 +152,8 @@ const likeVideo = async (req, res) => {
 }
 
 const unlikeVideo = async (req, res) => {
-    const { myId, videoId } = req.params;
+    const { myId } = req.params;
+    const { videoId } = req.query;
     const { actualEmail } = req.body;
     try {
         const user = await User.findById(myId);
@@ -160,7 +163,7 @@ const unlikeVideo = async (req, res) => {
         const video = await Video.findById(videoId);
         if(video.likersIds.indexOf(myId) === -1) return res.status(410).json({ message: 'This user did not like this video' });
 
-        const updatedVideo = await Video.findByIdAndUpdate(postId, { $pull: { likersIds: myId  }, $inc: { likesCount: -1 } });
+        const updatedVideo = await Video.findByIdAndUpdate(videoId, { $pull: { likersIds: myId  }, $inc: { likesCount: -1 } });
 
         res.status(200).json(updatedVideo);
     } catch (error) {
