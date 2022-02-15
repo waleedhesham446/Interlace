@@ -3,6 +3,7 @@ const { LiveStream } = require('../models/LiveStream');
 const { LiveComment } = require('../models/LiveComment');
 const { User } = require('../models/User');
 const { CoinRecord } = require('../models/CoinRecord');
+const { RCoinRecord } = require('../models/RCoinRecord');
 const { Sticker } = require('../models/Sticker');
 
 const getAllLiveStreams = async (req, res) => {
@@ -136,9 +137,9 @@ const sendSticker = async (req, res) => {
         if(sticker.price > me.coin) return res.status(411).json({ message: 'You do not have enough coins' });
 
         const meUpdated = await User.findByIdAndUpdate(myId, { $inc: { coin: -1*sticker.price } }, {new: true}).select('-password');
-        const himUpdated = await User.findByIdAndUpdate(hisId, { $inc: { coin: sticker.price } }, {new: true}).select('-password');
+        const himUpdated = await User.findByIdAndUpdate(hisId, { $inc: { rCoin: sticker.price } }, {new: true}).select('-password');
         const myNewRecord = await CoinRecord.create({ userId: myId, amount: sticker.price, isIncrease: false, usageType: 'buySticker' });
-        const hisNewRecord = await CoinRecord.create({ userId: hisId, amount: sticker.price, isIncrease: true, by: me.username, usageType: 'liveGift' });
+        const hisNewRecord = await RCoinRecord.create({ userId: hisId, amount: sticker.price, isIncrease: true, by: me.username, usageType: 'liveGift' });
         const updatedLiveStream = await LiveStream.findByIdAndUpdate(liveId, { $inc: { stickers: 1, coins: sticker.price } }, {new: true});
         res.status(200).json({ meUpdated, himUpdated, myNewRecord, hisNewRecord, updatedLiveStream });
     } catch (error) {
