@@ -35,7 +35,7 @@ const convert = async (req, res) => {
         if(amount <= 0) return res.status(410).json({ message: 'Invalid Value' });
         if(amount > user.coin) return res.status(411).json({ message: 'You do not have enough coins' });
 
-        const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { coin: -1*amount, rCoin: amount } }).select('-password');
+        const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { coin: -1*amount, rCoin: amount } }, {new: true}).select('-password');
         const newCoinRecord = await CoinRecord.create({ userId: myId, amount, isIncrease: false, usageType: 'RcoinConvertion' });
 
         res.status(200).json({ updatedUser, newCoinRecord });
@@ -57,7 +57,7 @@ const buyCoins = async (req, res) => {
 
         if(price <= 0 || price-discount <= 0) return res.status(410).json({ message: 'Invalid Value' });
 
-        const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { coin: coins } }).select('-password');
+        const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { coin: coins } }, {new: true}).select('-password');
         const newRecord = await CoinRecord.create({ userId: myId, amount: coins, isIncrease: true, usageType: 'rechargeCoin' });
        
         res.status(200).json({ updatedUser, newRecord });
@@ -74,7 +74,7 @@ const watchVideo = async (req, res) => {
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
         if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
 
-        const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { coin: 1 } }).select('-password');
+        const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { coin: 1 } }, {new: true}).select('-password');
         const newRecord = await CoinRecord.create({ userId: myId, amount: 1, isIncrease: true, usageType: 'watchingVideo' });
         res.status(200).json({ updatedUser, newRecord });
     } catch (error) {
@@ -100,8 +100,8 @@ const referralSubmit = async (req, res) => {
 
         const myNewCoinRecord = await CoinRecord.create({ userId: myId, amount: 200, isIncrease: true, by: him.username, usageType: 'referral' });
         const hisNewCoinRecord = await CoinRecord.create({ userId: hisCode, amount: 200, isIncrease: true, by: me.username, usageType: 'referral' });
-        const meUpdated = await User.findByIdAndUpdate(myId, { $inc: { coin: 200 } }).select('-password');
-        const himUpdated = await User.findByIdAndUpdate(hisCode, { $inc: { coin: 200 } }).select('-password');
+        const meUpdated = await User.findByIdAndUpdate(myId, { $inc: { coin: 200 } }, {new: true}).select('-password');
+        const himUpdated = await User.findByIdAndUpdate(hisCode, { $inc: { coin: 200 } }, {new: true}).select('-password');
         res.status(200).json({ hisInfoUpdated, newRefRecord, myNewCoinRecord, hisNewCoinRecord, meUpdated, himUpdated });
     } catch (error) {
         res.status(500).json(error);

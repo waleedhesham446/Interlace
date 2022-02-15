@@ -92,7 +92,7 @@ const createVideo = async (req, res) => {
         if(!url) return res.status(410).json({ message: 'Invalid value' });
         
         const video = await Video.create({ description, url, userId: myId });
-        const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { videos: 1 } });
+        const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { videos: 1 } }, {new: true});
         res.status(200).json(video);
     } catch (error) {
         res.status(500).json(error);
@@ -113,7 +113,7 @@ const createComment = async (req, res) => {
         if(!content) return res.status(410).json({ message: 'Invalid value' });
 
         const comment = await VideoComment.create({ videoId, content, userId: myId });
-        const updatedVideo = await Video.findByIdAndUpdate(videoId, { $inc: { commentsCount: 1 } });
+        const updatedVideo = await Video.findByIdAndUpdate(videoId, { $inc: { commentsCount: 1 } }, {new: true});
 
         res.status(200).json({ comment, updatedVideo });
     } catch (error) {
@@ -143,7 +143,7 @@ const likeVideo = async (req, res) => {
         const video = await Video.findById(videoId);
         if(video.likersIds.indexOf(myId) !== -1) return res.status(410).json({ message: 'This user already liked this video' });
 
-        const updatedVideo = await Video.findByIdAndUpdate(videoId, { $push: { likersIds: myId  }, $inc: { likesCount: 1 } });
+        const updatedVideo = await Video.findByIdAndUpdate(videoId, { $push: { likersIds: myId  }, $inc: { likesCount: 1 } }, {new: true});
 
         res.status(200).json(updatedVideo);
     } catch (error) {
@@ -163,7 +163,7 @@ const unlikeVideo = async (req, res) => {
         const video = await Video.findById(videoId);
         if(video.likersIds.indexOf(myId) === -1) return res.status(410).json({ message: 'This user did not like this video' });
 
-        const updatedVideo = await Video.findByIdAndUpdate(videoId, { $pull: { likersIds: myId  }, $inc: { likesCount: -1 } });
+        const updatedVideo = await Video.findByIdAndUpdate(videoId, { $pull: { likersIds: myId  }, $inc: { likesCount: -1 } }, {new: true});
 
         res.status(200).json(updatedVideo);
     } catch (error) {

@@ -24,7 +24,7 @@ const buyVipPlan = async (req, res) => {
 
         if(vipPlan.price > user.coin) return res.status(410).json({ message: 'You do not have enough coins' });
         
-        const updatedUser = await User.findByIdAndUpdate(myId, { isVip: true, $inc: { coin: -1*vipPlan.price } });
+        const updatedUser = await User.findByIdAndUpdate(myId, { isVip: true, $inc: { coin: -1*vipPlan.price } }, {new: true});
         
         res.status(200).json(updatedUser);
     } catch (error) {
