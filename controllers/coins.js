@@ -46,13 +46,13 @@ const convert = async (req, res) => {
 
 const buyCoins = async (req, res) => {
     const { myId } = req.params;
-    const { id, coins, price, discount, actualEmail } = req.body;
+    const { _id, coins, price, discount, actualEmail } = req.body;
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
         if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
 
-        const offer = await Offer.find({ _id: id, coins, price, discount });
+        const offer = await Offer.find({ _id: _id, coins, price, discount });
         if(!offer) return res.status(404).json({ message: 'This offer does not exist' });
 
         if(price <= 0 || price-discount <= 0) return res.status(410).json({ message: 'Invalid Value' });

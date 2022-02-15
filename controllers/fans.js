@@ -28,6 +28,7 @@ const follow = async (req, res) => {
         if(him.followersIds.indexOf(myId) !== -1) return res.status(410).json({ message: 'You already follows this person' });
 
         const updatedUser = await User.findByIdAndUpdate(hisId, { $push: { followersIds: myId  }, $inc: { followers: 1 } }, {new: true});
+        const meUpdated = await User.findByIdAndUpdate(myId, { $inc: { fans: 1 } }, {new: true});
         res.status(200).json(updatedUser);
     } catch (error) {
         res.status(500).json(error);
@@ -47,6 +48,7 @@ const unfollow = async (req, res) => {
         if(him.followersIds.indexOf(myId) === -1) return res.status(410).json({ message: 'You does not follow this person' });
 
         const updatedUser = await User.findByIdAndUpdate(hisId, { $pull: { followersIds: myId  }, $inc: { followers: -1 } }, {new: true});
+        const meUpdated = await User.findByIdAndUpdate(myId, { $inc: { fans: -1 } }, {new: true});
         res.status(200).json(updatedUser);
     } catch (error) {
         res.status(500).json(error);

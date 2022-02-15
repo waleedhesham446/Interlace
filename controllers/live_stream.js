@@ -1,3 +1,4 @@
+const ObjectId = require('mongoose').Types.ObjectId;
 const { LiveStream } = require('../models/LiveStream');
 const { LiveComment } = require('../models/LiveComment');
 const { User } = require('../models/User');
@@ -25,15 +26,16 @@ const getWatchers = async (req, res) => {
 }
 
 const create = async (req, res) => {
-    const { watching, username, country, image, coins, stickers, actualEmail } = req.body;
+    const body = JSON.parse(JSON.stringify(req.body));
+    const { username, image, actualEmail } = body;
     try {
         const user = await User.findOne({ username });
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
         if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
 
-        const newLive = await LiveStream.create({ watching, username, url, country, image, coins, stickers });
+        const newLive = await LiveStream.create({ username, country: user.country, image });
         const newLiveWithURL = await LiveStream.findByIdAndUpdate(newLive._id, { url: `${newLive._id}` }, {new: true});
-        res.status(200).json(newLiveWithURL.url);
+        res.status(200).json(newLiveWithURL);
     } catch (error) {
         res.status(500).json(error);
     }
@@ -42,12 +44,16 @@ const create = async (req, res) => {
 const getComments = async (req, res) => {
     const { liveId } = req.params;
     try {
-        const comments = await LiveComment.find({ liveId });
-        const commentersIds = comments.map(comment => comment.userId);
-        const commenters = await User.find({ _id: { $in: commentersIds } }).select('-password');
-        comments.forEach((comment, i) => {
-            comment.user = commenters[i];
-        });
+        const comments = await LiveComment.aggregate([
+            { $match: { postId: ObjectId(liveId) }},
+            { $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "user"
+            }},
+            { "$project": { "user.password": 0 }},
+        ]);
         res.status(200).json(comments);
     } catch (error) {
         res.status(500).json(error);
@@ -58,7 +64,7 @@ const createComment = async (req, res) => {
     const { liveId } = req.params;
     const { myId, content, actualEmail } = req.body;
     try {
-        const user = await User.findById(hisId).select('-password');
+        const user = await User.findById(myId).select('-password');
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
         if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
 
@@ -69,7 +75,8 @@ const createComment = async (req, res) => {
         
         if(!content) return res.status(411).json({ message: 'Invalid value' });
 
-        const newComment = await LiveComment.create({ liveId, content, userId: myId });
+        let newComment = await LiveComment.create({ liveId, content, userId: myId });
+        newComment = newComment.toObject();
         newComment.user = user;
         
         res.status(200).json(newComment);
@@ -100,7 +107,8 @@ const sendGift = async (req, res) => {
         const himUpdated = await User.findByIdAndUpdate(hisId, { $inc: { coin: amount } }, {new: true}).select('-password');
         const myNewRecord = await CoinRecord.create({ userId: myId, amount, isIncrease: false, usageType: 'sendToHost' });
         const hisNewRecord = await CoinRecord.create({ userId: hisId, amount, isIncrease: true, by: me.username, usageType: 'liveGift' });
-        res.status(200).json({ meUpdated, himUpdated, myNewRecord, hisNewRecord });
+        const updatedLiveStream = await LiveStream.findByIdAndUpdate(liveId, { $inc: { coins: amount } }, {new: true});
+        res.status(200).json({ meUpdated, himUpdated, myNewRecord, hisNewRecord, updatedLiveStream });
     } catch (error) {
         res.status(500).json(error);
     }
@@ -131,10 +139,49 @@ const sendSticker = async (req, res) => {
         const himUpdated = await User.findByIdAndUpdate(hisId, { $inc: { coin: sticker.price } }, {new: true}).select('-password');
         const myNewRecord = await CoinRecord.create({ userId: myId, amount: sticker.price, isIncrease: false, usageType: 'buySticker' });
         const hisNewRecord = await CoinRecord.create({ userId: hisId, amount: sticker.price, isIncrease: true, by: me.username, usageType: 'liveGift' });
-        res.status(200).json({ meUpdated, himUpdated, myNewRecord, hisNewRecord });
+        const updatedLiveStream = await LiveStream.findByIdAndUpdate(liveId, { $inc: { stickers: 1, coins: sticker.price } }, {new: true});
+        res.status(200).json({ meUpdated, himUpdated, myNewRecord, hisNewRecord, updatedLiveStream });
     } catch (error) {
         res.status(500).json(error);
     }
 }
 
-module.exports = { getAllLiveStreams, getWatchers, create, getComments, createComment, sendGift, sendSticker };
+const joinLiveStream = async (req, res) => {
+    const { liveId } = req.params;
+    const { myId, actualEmail } = req.body;
+    try {
+        const user = await User.findById(myId).select('-password');
+        if(!user) return res.status(404).json({ message: 'This user is not registered' });
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
+
+        const live = await LiveStream.findById(liveId);
+        if(!live) return res.status(404).json({ message: 'This live stream does not exist' });
+
+        if(live.watchersIds.indexOf(myId) !== -1) return res.status(410).json({ message: 'You are already inside this live stream' });
+        const newLive = await LiveStream.findByIdAndUpdate(liveId, { $push: { watchersIds: myId  }, $inc: { watching: 1 } }, {new: true});
+        res.status(200).json({ message: "You joind the live stream" });
+    } catch (error) {
+        res.status(500).json(error);
+    }
+}
+
+const leaveLiveStream = async (req, res) => {
+    const { liveId } = req.params;
+    const { myId, actualEmail } = req.body;
+    try {
+        const user = await User.findById(myId).select('-password');
+        if(!user) return res.status(404).json({ message: 'This user is not registered' });
+        if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
+
+        const live = await LiveStream.findById(liveId);
+        if(!live) return res.status(404).json({ message: 'This live stream does not exist' });
+
+        if(live.watchersIds.indexOf(myId) === -1) return res.status(410).json({ message: 'You are not inside this live stream' });
+        const newLive = await LiveStream.findByIdAndUpdate(liveId, { $pull: { watchersIds: myId  }, $inc: { watching: -1 } }, {new: true});
+        res.status(200).json({ message: "You left the live stream" });
+    } catch (error) {
+        res.status(500).json(error);
+    }
+}
+
+module.exports = { getAllLiveStreams, getWatchers, create, getComments, createComment, sendGift, sendSticker, joinLiveStream, leaveLiveStream };

@@ -1,3 +1,4 @@
+const ObjectId = require('mongoose').Types.ObjectId;
 const { User } = require('../models/User');
 const { Post } = require('../models/Post');
 const { PostComment } = require('../models/PostComment');
@@ -140,7 +141,16 @@ const createComment = async (req, res) => {
 const getCommentsOfPost = async (req, res) => {
     const { postId } = req.params;
     try {
-        const comments = await PostComment.find({ postId });
+        const comments = await PostComment.aggregate([
+            { $match: { postId: ObjectId(postId) }},
+            { $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "user"
+            }},
+            { "$project": { "user.password": 0 }},
+        ]);
         res.status(200).json(comments);
     } catch (error) {
         res.status(500).json(error);

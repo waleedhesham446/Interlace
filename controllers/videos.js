@@ -1,3 +1,4 @@
+const ObjectId = require('mongoose').Types.ObjectId;
 const { User } = require('../models/User');
 const { Video } = require('../models/Video');
 const { VideoComment } = require('../models/VideoComment');
@@ -88,7 +89,7 @@ const createVideo = async (req, res) => {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
         if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
-
+        if(!user.isVip && user.level < 2) return res.status(410).json({ message: 'You do not have the privilege to post videos' });
         if(!url) return res.status(410).json({ message: 'Invalid value' });
         
         const video = await Video.create({ description, url, userId: myId });
@@ -124,7 +125,16 @@ const createComment = async (req, res) => {
 const getCommentsOfVideo = async (req, res) => {
     const { videoId } = req.params;
     try {
-        const comments = await VideoComment.find({ videoId });
+        const comments = await VideoComment.aggregate([
+            { $match: { postId: ObjectId(videoId) }},
+            { $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "user"
+            }},
+            { "$project": { "user.password": 0 }},
+        ]);
         res.status(200).json(comments);
     } catch (error) {
         res.status(500).json(error);

@@ -1,6 +1,5 @@
 const { User } = require('../models/User');
 const { RCoinRecord } = require('../models/RCoinRecord');
-const { CoinRecord } = require('../models/CoinRecord');
 const { Cashout } = require('../models/Cashout');
 
 const getMyRCoinRecords = async (req, res) => {
