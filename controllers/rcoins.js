@@ -25,9 +25,8 @@ const convert = async (req, res) => {
         if(amount <= 0) return res.status(410).json({ message: 'Invalid Value' });
         if(amount > user.rCoin) return res.status(411).json({ message: 'You do not have enough rcoins' });
 
-        const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { coin: amount, rCoin: -1*amount } });
+        const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { coin: amount, rCoin: -1*amount } }).select('-password');
         const newRecord = await RCoinRecord.create({ userId: myId, amount, isIncrease: false, usageType: 'convertToCoin' });
-        delete updatedUser.password;
 
         res.status(200).json({ updatedUser, newRecord });
     } catch (error) {
@@ -57,9 +56,8 @@ const makeCashout = async (req, res) => {
         if(amount <= 0) return res.status(410).json({ message: 'Invalid Value' });
         if(amount > user.rCoin) return res.status(411).json({ message: 'You do not have enough rcoins' });
 
-        const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { rCoin: -1*amount } });
+        const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { rCoin: -1*amount } }).select('-password');
         const newRecord = await RCoinRecord.create({ userId: myId, amount, isIncrease: false, usageType: 'cashout' });
-        delete updatedUser.password;
         const newCashout = await Cashout.create({ userId: myId, amount, method });
 
         res.status(200).json({ updatedUser, newRecord, newCashout });

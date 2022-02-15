@@ -8,8 +8,7 @@ const getAllFollowers = async (req, res) => {
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
 
         const followersIds = user.followersIds;
-        let followers = await User.find({ _id: { $in: followersIds } });
-        followers.forEach(follower => delete follower.password);
+        let followers = await User.find({ _id: { $in: followersIds } }).select('-password');
         res.status(200).json(followers);
     } catch (error) {
         res.status(500).json(error);

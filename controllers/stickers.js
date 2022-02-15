@@ -31,11 +31,9 @@ const sendSticker = async (req, res) => {
 
         if(sticker.price > me.coin) return res.status(411).json({ message: 'You do not have enough coins' });
 
-        const updatedSender = await User.findByIdAndUpdate(myId, { $inc: { coin: -1*sticker.price } });
-        const updatedReceiver = await User.findByIdAndUpdate(hisId, { $inc: { coin: sticker.price } });
+        const updatedSender = await User.findByIdAndUpdate(myId, { $inc: { coin: -1*sticker.price } }).select('-password');
+        const updatedReceiver = await User.findByIdAndUpdate(hisId, { $inc: { coin: sticker.price } }).select('-password');
         
-        delete updatedSender.password;
-        delete updatedReceiver.password;
         res.status(200).json({ sticker, updatedSender, updatedReceiver });
     } catch (error) {
         res.status(500).json(error);

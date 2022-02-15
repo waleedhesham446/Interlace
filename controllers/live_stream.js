@@ -17,8 +17,7 @@ const getWatchers = async (req, res) => {
     const { liveId } = req.params;
     try {
         const { watchersIds } = await LiveStream.findById(liveId);
-        let watchersList = await User.find({ _id: { $in: watchersIds } });
-        watchersList.forEach(watcher => delete watcher.password);
+        let watchersList = await User.find({ _id: { $in: watchersIds } }).select('-password');
         res.status(200).json(watchersList);
     } catch (error) {
         res.status(500).json(error);
@@ -45,9 +44,8 @@ const getComments = async (req, res) => {
     try {
         const comments = await LiveComment.find({ liveId });
         const commentersIds = comments.map(comment => comment.userId);
-        const commenters = await User.find({ _id: { $in: commentersIds } });
+        const commenters = await User.find({ _id: { $in: commentersIds } }).select('-password');
         comments.forEach((comment, i) => {
-            delete commenters[i].password;
             comment.user = commenters[i];
         });
         res.status(200).json(comments);
@@ -60,7 +58,7 @@ const createComment = async (req, res) => {
     const { liveId } = req.params;
     const { myId, content, actualEmail } = req.body;
     try {
-        const user = await User.findById(hisId);
+        const user = await User.findById(hisId).select('-password');
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
         if(user.email != actualEmail) return res.status(401).json({ message: 'Unauthorized user' });
 
@@ -72,7 +70,6 @@ const createComment = async (req, res) => {
         if(!content) return res.status(411).json({ message: 'Invalid value' });
 
         const newComment = await LiveComment.create({ liveId, content, userId: myId });
-        delete user.password;
         newComment.user = user;
         
         res.status(200).json(newComment);
@@ -99,10 +96,8 @@ const sendGift = async (req, res) => {
         if(amount <= 0) return res.status(410).json({ message: 'Invalid Value' });
         if(amount > me.coin) return res.status(411).json({ message: 'You do not have enough coins' });
 
-        const meUpdated = await User.findByIdAndUpdate(myId, { $inc: { coin: -1*amount } });
-        const himUpdated = await User.findByIdAndUpdate(hisId, { $inc: { coin: amount } });
-        delete meUpdated.password;
-        delete himUpdated.password;
+        const meUpdated = await User.findByIdAndUpdate(myId, { $inc: { coin: -1*amount } }).select('-password');
+        const himUpdated = await User.findByIdAndUpdate(hisId, { $inc: { coin: amount } }).select('-password');
         const myNewRecord = await CoinRecord.create({ userId: myId, amount, isIncrease: false, usageType: 'sendToHost' });
         const hisNewRecord = await CoinRecord.create({ userId: hisId, amount, isIncrease: true, by: me.username, usageType: 'liveGift' });
         res.status(200).json({ meUpdated, himUpdated, myNewRecord, hisNewRecord });
@@ -132,10 +127,8 @@ const sendSticker = async (req, res) => {
         if(sticker.price <= 0) return res.status(410).json({ message: 'Invalid Value' });
         if(sticker.price > me.coin) return res.status(411).json({ message: 'You do not have enough coins' });
 
-        const meUpdated = await User.findByIdAndUpdate(myId, { $inc: { coin: -1*sticker.price } });
-        const himUpdated = await User.findByIdAndUpdate(hisId, { $inc: { coin: sticker.price } });
-        delete meUpdated.password;
-        delete himUpdated.password;
+        const meUpdated = await User.findByIdAndUpdate(myId, { $inc: { coin: -1*sticker.price } }).select('-password');
+        const himUpdated = await User.findByIdAndUpdate(hisId, { $inc: { coin: sticker.price } }).select('-password');
         const myNewRecord = await CoinRecord.create({ userId: myId, amount: sticker.price, isIncrease: false, usageType: 'buySticker' });
         const hisNewRecord = await CoinRecord.create({ userId: hisId, amount: sticker.price, isIncrease: true, by: me.username, usageType: 'liveGift' });
         res.status(200).json({ meUpdated, himUpdated, myNewRecord, hisNewRecord });

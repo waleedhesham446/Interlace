@@ -48,12 +48,14 @@ const getPostsByType = async (req, res) => {
         if(type === 'Following'){
             const followingUsers = await User.find({ followersIds: myId });
             const followingUsersIds = followingUsers.map(followingUser => followingUser._id);
-            posts = await Post.find({ userId: { $in: followingUsersIds } }).sort({ time : -1});
+            const notSortedPosts = await Post.find({ userId: { $in: followingUsersIds } }).sort({ time : -1});
+            posts = notSortedPosts.reverse();
         }else if(type === 'Popular'){
             const notSortedPosts = await Post.find();
             posts = notSortedPosts.sort((postA, postB) => (postA.commentsCount + postA.likesCount) > (postB.commentsCount + postB.likesCount));
         }else if(type === 'Latest'){
-            posts = await Post.find().sort({ time : -1});
+            const notSortedPosts = await Post.find().sort({ time : -1});
+            posts = notSortedPosts.reverse();
         }else{
             return res.status(410).json({ message: 'Invalid posts type' });
         }
@@ -97,7 +99,8 @@ const getPostsOfUser = async (req, res) => {
 }
 
 const createPost = async (req, res) => {
-    const { location, caption, image, allowComments, hashtag, privacy, myId, actualEmail } = req.body;
+    const body = JSON.parse(JSON.stringify(req.body));
+    const { location, caption, image, allowComments, hashtag, privacy, myId, actualEmail } = body;
     try {
         const user = await User.findById(myId);
         if(!user) return res.status(404).json({ message: 'This user is not registered' });
@@ -106,9 +109,9 @@ const createPost = async (req, res) => {
         if(!caption && !image) return res.status(410).json({ message: 'Invalid empty post' });
 
         const post = await Post.create({ location, caption, image, allowComments, hashtag, privacy, userId: myId });
-        const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { posts: 1 } });
+        const updatedUser = await User.findByIdAndUpdate(myId, { $inc: { posts: 1 } }, {new: true}).select('-password');
         
-        res.status(200).json(post);
+        res.status(200).json({ post, updatedUser });
     } catch (error) {
         res.status(500).json(error);
     }
@@ -126,7 +129,7 @@ const createComment = async (req, res) => {
         
         const comment = await PostComment.create({ postId, content, userId: myId });
         
-        const post = await Post.findByIdAndUpdate(postId, { $inc: { commentsCount: 1 } });
+        const post = await Post.findByIdAndUpdate(postId, { $inc: { commentsCount: 1 } }, {new: true});
 
         res.status(200).json(comment);
     } catch (error) {
@@ -156,9 +159,9 @@ const likePost = async (req, res) => {
         const post1 = await Post.findById(postId);
         if(post1.likersIds.indexOf(myId) !== -1) return res.status(410).json({ message: 'This user already liked this post' });
 
-        const post = await Post.findByIdAndUpdate(postId, { $push: { likersIds: myId  }, $inc: { likesCount: 1 } });
+        const post = await Post.findByIdAndUpdate(postId, { $push: { likersIds: myId  }, $inc: { likesCount: 1 } }, {new: true});
 
-        res.status(200).json(comments);
+        res.status(200).json(post);
     } catch (error) {
         res.status(500).json(error);
     }
@@ -176,9 +179,9 @@ const unlikePost = async (req, res) => {
         const post1 = await Post.findById(postId);
         if(post1.likersIds.indexOf(myId) === -1) return res.status(410).json({ message: 'This user did not like this post' });
 
-        const post = await Post.findByIdAndUpdate(postId, { $pull: { likersIds: myId  }, $inc: { likesCount: -1 } });
+        const post = await Post.findByIdAndUpdate(postId, { $pull: { likersIds: myId  }, $inc: { likesCount: -1 } }, {new: true});
 
-        res.status(200).json(comments);
+        res.status(200).json(post);
     } catch (error) {
         res.status(500).json(error);
     }
