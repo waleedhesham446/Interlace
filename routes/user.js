@@ -28,7 +28,7 @@ const storage = multer.diskStorage({
 const router = express.Router();
 
 router.post('/signup', multer({ storage: storage }).single("image"), signup);
-router.get('/login', login);
+router.post('/login', login);
 router.get('/logout', logout);
 router.get('/search/:myId', search);
 router.get('/:username', getByUserName);

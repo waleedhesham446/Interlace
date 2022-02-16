@@ -26,7 +26,7 @@ const signup = async (req, res) => {
 }
 
 const login = async (req, res) => {
-    const { username, password } = req.query;
+    const { username, password } = req.body;
     try {
         let existingUser = await User.findOne({ username });
         if(!existingUser) return res.status(400).json({ message: 'Invalid username or password' });
