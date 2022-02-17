@@ -15,7 +15,6 @@ const { makeid } = require('../utilities');
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const DIR = `uploads/stories/${req.body.type}s`;
-        console.log(DIR);
         cb(null, DIR);
     },
     filename: (req, file, cb) => {

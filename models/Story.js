@@ -22,11 +22,10 @@ const storySchema = mongoose.Schema({
 		type: String,
 		required: false,
 	},
-    createdAt: { 
+    date: { 
 		type: Date,
         required: true,
         default: new Date(),
-		expires: 86400,
 	},
 });
 

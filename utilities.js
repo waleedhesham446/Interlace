@@ -168,7 +168,7 @@ function socket_io_communication(io) {
                 });
             });
             socket.emit('liveStreamChallengeStarted');
-            setTimeout(() => {
+            setTimeout(async() => {
                 if(!currentChallenges[liveId][challengeId]) return;
                 const senderAfterChallenge = await User.findById(senderId).select('-password');
                 const receiverAfterChallenge = await User.findById(receiverId).select('-password');
@@ -271,22 +271,27 @@ function makeid (length) {
 
 function cleanUpOldStories(){
     setTimeout(async() => {
-        const stories = await Story.find();
-        const storiesFileNames = stories.map(story => story.fileUrl.slice(14));
-        const existingImages = fs.readdirSync('./uploads/stories/images');
-        const existingVideos = fs.readdirSync('./uploads/stories/videos');
-        const existingAudios = fs.readdirSync('./uploads/stories/audios');
-        existingImages.forEach(img => {
-            if(storiesFileNames.indexOf(img) === -1) fs.unlinkSync(`./uploads/stories/images/${img}`);
-        });
-        existingVideos.forEach(video => {
-            if(storiesFileNames.indexOf(video) === -1) fs.unlinkSync(`./uploads/stories/videos/${video}`);
-        });
-        existingAudios.forEach(audio => {
-            if(storiesFileNames.indexOf(audio) === -1) fs.unlinkSync(`./uploads/stories/audios/${audio}`);
-        });
-    // }, 1000*60*60);
-    }, 1000);
+        let yesterdayDate = new Date((new Date().getTime() - (24*60*60*1000)));
+        try{
+            const stories = await Story.find({ date: { $lte: yesterdayDate } });
+            await Story.deleteMany({ date: { $lte: yesterdayDate } });
+            const storiesFileNames = stories.map(story => story.fileUrl.slice(14));
+            const existingImages = fs.readdirSync('./uploads/stories/images');
+            const existingVideos = fs.readdirSync('./uploads/stories/videos');
+            const existingAudios = fs.readdirSync('./uploads/stories/audios');
+            storiesFileNames.forEach((file, i) => {
+                if(stories[i].type === 'image'){
+                    if(existingImages.indexOf(file) !== -1) fs.unlinkSync(`./uploads/stories/images/${file}`);
+                }else if(stories[i].type === 'video'){
+                    if(existingVideos.indexOf(file) !== -1) fs.unlinkSync(`./uploads/stories/videos/${file}`);
+                }else if(stories[i].type === 'audio'){
+                    if(existingAudios.indexOf(file) !== -1) fs.unlinkSync(`./uploads/stories/audios/${file}`);
+                }
+            });
+        }catch(error) {
+            console.log(error);
+        }
+    }, 1000*60*60);
 }
 
 module.exports = { socket_io_communication, makeid, cleanUpOldStories };
