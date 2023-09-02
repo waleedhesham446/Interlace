@@ -1,2 +1,2 @@
-# Vuexy
-A node js API for the mobile application 'Vuexy'
+# Interlace
+A node js API for the 'Interlace' social media application
